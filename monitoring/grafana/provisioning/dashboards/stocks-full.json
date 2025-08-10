@@ -1,0 +1,108 @@
+{
+  "title": "Stocks  Full",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-6h", "to": "now" },
+
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "symbol",
+        "label": "Symbols",
+        "datasource": "Prometheus",
+        "query": "label_values(stock_price, symbol)",
+        "definition": "label_values(stock_price, symbol)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "sort": 1
+      }
+    ]
+  },
+
+  "panels": [
+    { "type": "timeseries", "title": "Price (selected)", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 0, "w": 16, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "stock_price{symbol=~\"$symbol\"}", "legendFormat": "{{symbol}}" }]
+    },
+
+    { "type": "timeseries", "title": "Relative Strength vs SPY (selected, 100 = SPY)", "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A",
+        "expr": "stock_price{symbol=~\"$symbol\"} / ignoring(symbol) group_left() stock_price{symbol=\"SPY\"} * 100",
+        "legendFormat": "{{symbol}}" }]
+    },
+
+    { "type": "stat", "title": "% Change over Range (selected)", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 8, "w": 4, "h": 5 },
+      "targets": [{ "refId": "A",
+        "expr": "(stock_price{symbol=~\"$symbol\"} - (stock_price{symbol=~\"$symbol\"} @ start())) / (stock_price{symbol=~\"$symbol\"} @ start()) * 100" }]
+    },
+
+    { "type": "stat", "title": "Breadth: % Up (over range)", "datasource": "Prometheus",
+      "gridPos": { "x": 4, "y": 8, "w": 4, "h": 5 },
+      "targets": [{ "refId": "A",
+        "expr": "100 * sum( ((stock_price - (stock_price @ start())) / (stock_price @ start()) * 100) > 0 ) / count(stock_price)" }]
+    },
+
+    { "type": "stat", "title": "Top Gainer (over range) %", "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 8, "w": 4, "h": 5 },
+      "targets": [{ "refId": "A",
+        "expr": "max( (stock_price - (stock_price @ start())) / (stock_price @ start()) * 100 )" }]
+    },
+
+    { "type": "stat", "title": "Top Loser (over range) %", "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 8, "w": 4, "h": 5 },
+      "targets": [{ "refId": "A",
+        "expr": "min( (stock_price - (stock_price @ start())) / (stock_price @ start()) * 100 )" }]
+    },
+
+    { "type": "table", "title": "Top 10  % Change (over range)", "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 8, "w": 8, "h": 10 },
+      "targets": [{ "refId": "A",
+        "expr": "topk(10, (stock_price - (stock_price @ start())) / (stock_price @ start()) * 100)" }]
+    },
+
+    { "type": "table", "title": "Bottom 10 – % Change (over range)", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 13, "w": 8, "h": 10 },
+      "targets": [{ "refId": "A",
+        "expr": "bottomk(10, (stock_price - (stock_price @ start())) / (stock_price @ start()) * 100)" }]
+    },
+
+    { "type": "table", "title": "RSI(14)  Overbought", "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 13, "w": 4, "h": 10 },
+      "targets": [{ "refId": "A", "expr": "topk(10, stock_rsi14)" }]
+    },
+
+    { "type": "table", "title": "RSI(14)  Oversold", "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 13, "w": 4, "h": 10 },
+      "targets": [{ "refId": "A", "expr": "bottomk(10, stock_rsi14)" }]
+    },
+
+    { "type": "table", "title": "Volume Spike (ratio vs 20d avg)  Top 10", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 23, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "topk(10, stock_volume_ratio)" }]
+    },
+
+    { "type": "table", "title": "Volatility 20d (annualized %)  Top 10", "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 23, "w": 8, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "topk(10, stock_vol_20d_annualized)" }]
+    },
+
+    { "type": "timeseries", "title": "MACD vs Signal (selected)", "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 18, "w": 8, "h": 13 },
+      "targets": [
+        { "refId": "A", "expr": "stock_macd{symbol=~\"$symbol\"}", "legendFormat": "MACD {{symbol}}" },
+        { "refId": "B", "expr": "stock_macd_signal{symbol=~\"$symbol\"}", "legendFormat": "Signal {{symbol}}" }
+      ]
+    },
+
+    { "type": "timeseries", "title": "Bollinger %B 20d (selected)", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 31, "w": 12, "h": 7 },
+      "targets": [{ "refId": "A", "expr": "stock_bbp_20d{symbol=~\"$symbol\"}", "legendFormat": "{{symbol}}" }]
+    }
+  ]
+}

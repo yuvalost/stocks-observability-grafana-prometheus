@@ -1,0 +1,53 @@
+{
+  "title": "Stocks  Signals",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    { "type": "timeseries", "title": "Price (selected)", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 0, "w": 16, "h": 8 },
+      "targets": [{ "expr": "stock_price", "legendFormat": "{{symbol}}", "refId": "A" }]
+    },
+    { "type": "table", "title": "Top 10 by 1d Return %", "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "targets": [{ "expr": "topk(10, stock_return_1d_percent)", "refId": "A" }]
+    },
+    { "type": "table", "title": "Top 10 by 15m %", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 8, "w": 8, "h": 7 },
+      "targets": [{ "expr": "topk(10, stock_change_15m_percent)", "refId": "A" }]
+    },
+    { "type": "table", "title": "RSI(14) (oversold<30 / overbought>70)", "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 8, "w": 8, "h": 7 },
+      "targets": [{ "expr": "stock_rsi14", "refId": "A" }]
+    },
+    { "type": "table", "title": "Volume Spike (ratio vs 20d avg)", "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 8, "w": 8, "h": 7 },
+      "targets": [{ "expr": "topk(10, stock_volume_ratio)", "refId": "A" }]
+    },
+    { "type": "timeseries", "title": "MACD & Signal (overlay)", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 15, "w": 12, "h": 7 },
+      "targets": [
+        { "expr": "stock_macd", "legendFormat": "MACD {{symbol}}", "refId": "A" },
+        { "expr": "stock_macd_signal", "legendFormat": "Signal {{symbol}}", "refId": "B" }
+      ]
+    },
+    { "type": "timeseries", "title": "Bollinger %B (20d)", "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 15, "w": 12, "h": 7 },
+      "targets": [{ "expr": "stock_bbp_20d", "legendFormat": "{{symbol}}", "refId": "A" }]
+    },
+    { "type": "table", "title": "Breakouts 7d (1=yes)", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 22, "w": 8, "h": 7 },
+      "targets": [{ "expr": "stock_breakout_7d", "refId": "A" }]
+    },
+    { "type": "table", "title": "Breakdowns 7d (1=yes)", "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 22, "w": 8, "h": 7 },
+      "targets": [{ "expr": "stock_breakdown_7d", "refId": "A" }]
+    },
+    { "type": "table", "title": "Volatility 20d (annualized %)", "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 22, "w": 8, "h": 7 },
+      "targets": [{ "expr": "stock_vol_20d_annualized", "refId": "A" }]
+    }
+  ]
+}

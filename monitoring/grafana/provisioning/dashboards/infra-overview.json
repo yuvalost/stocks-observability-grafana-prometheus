@@ -1,0 +1,41 @@
+{
+  "title": "Infra Overview",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "CPU Usage %",
+      "targets": [
+        { "expr": "instance:cpu_usage:percent", "legendFormat": "{{instance}}" }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Used %",
+      "targets": [
+        { "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100", "legendFormat": "{{instance}}" }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Container CPU (cAdvisor)",
+      "targets": [
+        { "expr": "rate(container_cpu_usage_seconds_total{image!=\"\",container!=\"\"}[5m])", "legendFormat": "{{container}}" }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Disk Usage %",
+      "targets": [
+        { "expr": "(1 - node_filesystem_free_bytes{fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes) * 100", "legendFormat": "{{instance}} {{mountpoint}}" }
+      ],
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    }
+  ],
+  "time": { "from": "now-24h", "to": "now" }
+}

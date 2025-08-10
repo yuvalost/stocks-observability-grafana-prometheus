@@ -1,0 +1,55 @@
+{
+  "title": "Stocks Overview",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 2,
+  "refresh": "10s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Price",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 0, "w": 18, "h": 9 },
+      "targets": [
+        { "refId": "A", "expr": "stock_price" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "1h Moving Average",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 9 },
+      "targets": [
+        { "refId": "A", "expr": "avg_over_time(stock_price[60m])" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "1h % Change (selected)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 9, "w": 6, "h": 6 },
+      "targets": [
+        { "refId": "A", "expr": "stock_price_change_1h_percent" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "24h % Change (selected)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 6, "y": 9, "w": 6, "h": 6 },
+      "targets": [
+        { "refId": "A", "expr": "stock_price_change_24h_percent" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Relative Strength vs SPY (100 = SPY)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 9, "w": 12, "h": 6 },
+      "targets": [
+        { "refId": "A", "expr": "stock_price / ignoring(symbol) group_left() stock_price{symbol=\"SPY\"} * 100" }
+      ]
+    }
+  ]
+}

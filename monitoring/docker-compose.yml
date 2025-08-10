@@ -1,0 +1,87 @@
+﻿networks:
+  mon: { driver: bridge }
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+# ===== reusable blocks =====
+x-stocks-env: &stocksEnv
+  MAX_TICKERS: 200
+  SLEEP_PER_SYMBOL: 0.25
+  REFRESH_SECONDS: 30
+  DEMO_MODE: "true"
+  DEMO_ONLY: "true"   # flip to "false" later for real quotes
+
+x-stocks-base: &stocksBase
+  build:
+    context: ./stocks-exporter
+    dockerfile: Dockerfile
+  networks: [ mon ]
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9400/metrics').read()"]
+    interval: 30s
+    timeout: 5s
+    retries: 5
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    ports: [ "9090:9090" ]
+    networks: [ mon ]
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_DEFAULT_THEME: dark
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports: [ "3000:3000" ]
+    networks: [ mon ]
+    depends_on: [ prometheus ]
+    restart: unless-stopped
+
+  # ===== exporters (sharded) =====
+  stocks-exporter-1:
+    <<: *stocksBase
+    ports: [ "9400:9400" ]
+    environment:
+      <<: *stocksEnv
+      TICKERS_FILE: /app/tickers-1.txt
+    volumes:
+      - ./stocks-exporter/app.py:/app/app.py:ro
+      - ./stocks-exporter/tickers-1.txt:/app/tickers-1.txt:ro
+
+  stocks-exporter-2:
+    <<: *stocksBase
+    ports: [ "9401:9400" ]
+    environment:
+      <<: *stocksEnv
+      TICKERS_FILE: /app/tickers-2.txt
+    volumes:
+      - ./stocks-exporter/app.py:/app/app.py:ro
+      - ./stocks-exporter/tickers-2.txt:/app/tickers-2.txt:ro
+
+  stocks-exporter-3:
+    <<: *stocksBase
+    ports: [ "9402:9400" ]
+    environment:
+      <<: *stocksEnv
+      TICKERS_FILE: /app/tickers-3.txt
+    volumes:
+      - ./stocks-exporter/app.py:/app/app.py:ro
+      - ./stocks-exporter/tickers-3.txt:/app/tickers-3.txt:ro

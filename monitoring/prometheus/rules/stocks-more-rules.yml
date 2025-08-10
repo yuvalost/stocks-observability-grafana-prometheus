@@ -1,0 +1,25 @@
+groups:
+- name: stocks-more-derived
+  rules:
+  - record: stock_change_15m_percent
+    expr: (stock_price - stock_price offset 15m) / (stock_price offset 15m) * 100
+  - record: stock_change_6h_percent
+    expr: (stock_price - stock_price offset 6h) / (stock_price offset 6h) * 100
+  - record: stock_change_7d_percent
+    expr: (stock_price - stock_price offset 7d) / (stock_price offset 7d) * 100
+  - record: stock_change_30d_percent
+    expr: (stock_price - stock_price offset 30d) / (stock_price offset 30d) * 100
+
+  - record: stock_ma_30m
+    expr: avg_over_time(stock_price[30m])
+  - record: stock_ma_4h
+    expr: avg_over_time(stock_price[4h])
+
+  - record: stock_max_7d
+    expr: max_over_time(stock_price[7d])
+  - record: stock_min_7d
+    expr: min_over_time(stock_price[7d])
+  - record: stock_breakout_7d
+    expr: stock_price >= stock_max_7d
+  - record: stock_breakdown_7d
+    expr: stock_price <= stock_min_7d

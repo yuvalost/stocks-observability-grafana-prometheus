@@ -1,0 +1,37 @@
+# monitoring/prometheus/rules/stocks-rules.yml
+groups:
+- name: stocks-derived
+  rules:
+  # 1h % change
+  - record: stock_price_change_1h_percent
+    expr: (stock_price - stock_price offset 1h) / (stock_price offset 1h) * 100
+
+  # 24h % change (will stabilize after ~24h of data)
+  - record: stock_price_change_24h_percent
+    expr: (stock_price - stock_price offset 24h) / (stock_price offset 24h) * 100
+
+  # 60m moving average (simple intraday momentum)
+  - record: stock_price_ma_60m
+    expr: avg_over_time(stock_price[60m])
+
+  # Relative strength vs SPY (include SPY in TICKERS)
+  - record: stock_relative_strength_vs_spy
+    expr: stock_price / ignoring(symbol) group_left() stock_price{symbol="SPY"} * 100
+
+- name: stocks-alerts
+  rules:
+  - alert: StockDropFast1h
+    expr: stock_price_change_1h_percent < -2
+    for: 10m
+    labels: { severity: warning }
+    annotations:
+      summary: "Rapid 1h drop for {{ $labels.symbol }}"
+      description: "Price is down {{ printf \"%.2f\" $value }}% over the last hour."
+
+  - alert: StockDropDay
+    expr: stock_price_change_24h_percent < -5
+    for: 30m
+    labels: { severity: critical }
+    annotations:
+      summary: "24h drop for {{ $labels.symbol }}"
+      description: "Down {{ printf \"%.2f\" $value }}% in 24h."

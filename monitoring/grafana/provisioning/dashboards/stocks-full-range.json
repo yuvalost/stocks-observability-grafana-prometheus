@@ -1,0 +1,65 @@
+{
+  "title": "Stocks  Full (Range)",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": { "list": [
+    { "type": "query", "name": "symbol", "label": "Symbols",
+      "datasource": "Prometheus", "query": "label_values(stock_price, symbol)",
+      "multi": true, "includeAll": true, "refresh": 1 }
+  ]},
+  "panels": [
+    { "type": "timeseries", "title": "Price (selected)", "datasource": "Prometheus",
+      "gridPos": { "x":0,"y":0,"w":14,"h":8 },
+      "targets": [{ "expr": "stock_price{symbol=~\"$symbol\"}", "legendFormat": "{{symbol}}", "refId":"A" }]
+    },
+    { "type": "timeseries", "title": "RS vs SPY (100=SPY)", "datasource":"Prometheus",
+      "gridPos": { "x":14,"y":0,"w":10,"h":8 },
+      "targets": [{ "expr": "stock_price{symbol=~\"$symbol\"} / ignoring(symbol) group_left() stock_price{symbol=\"SPY\"} * 100", "refId":"A", "legendFormat":"{{symbol}}" }]
+    },
+    { "type": "stat", "title": "% Change (over range)", "datasource":"Prometheus",
+      "gridPos": { "x":0,"y":8,"w":4,"h":5 },
+      "targets": [{ "expr": "stock_change_range_percent{symbol=~\"$symbol\"}", "refId":"A" }]
+    },
+    { "type": "stat", "title": "Breadth: % above 4h MA", "datasource":"Prometheus",
+      "gridPos": { "x":4,"y":8,"w":4,"h":5 },
+      "targets": [{ "expr": "market_breadth_above_ma_4h_percent", "refId":"A" }]
+    },
+    { "type": "table", "title": "Top 15 gainers (over range) %", "datasource":"Prometheus",
+      "gridPos": { "x":8,"y":8,"w":8,"h":10 },
+      "targets": [{ "expr": "topk(15, stock_change_range_percent)", "refId":"A" }]
+    },
+    { "type": "table", "title": "Bottom 15 losers (over range) %", "datasource":"Prometheus",
+      "gridPos": { "x":16,"y":8,"w":8,"h":10 },
+      "targets": [{ "expr": "bottomk(15, stock_change_range_percent)", "refId":"A" }]
+    },
+    { "type": "table", "title": "RSI(14) extremes", "datasource":"Prometheus",
+      "gridPos": { "x":0,"y":13,"w":8,"h":10 },
+      "targets": [{ "expr": "stock_rsi14", "refId":"A" }]
+    },
+    { "type": "table", "title": "Volume spikes (ratio vs 20d avg)", "datasource":"Prometheus",
+      "gridPos": { "x":8,"y":18,"w":8,"h":10 },
+      "targets": [{ "expr": "topk(15, stock_volume_ratio)", "refId":"A" }]
+    },
+    { "type": "table", "title": "Highs/Lows  Drawdown 7d / Up-from-low 7d", "datasource":"Prometheus",
+      "gridPos": { "x":16,"y":18,"w":8,"h":10 },
+      "targets": [
+        { "expr": "stock_drawdown_7d_percent", "refId":"A" },
+        { "expr": "stock_up_from_7d_low_percent", "refId":"B" }
+      ]
+    },
+    { "type": "timeseries", "title": "MACD vs Signal (selected)", "datasource":"Prometheus",
+      "gridPos": { "x":0,"y":28,"w":12,"h":8 },
+      "targets": [
+        { "expr": "stock_macd{symbol=~\"$symbol\"}", "legendFormat":"MACD {{symbol}}", "refId":"A" },
+        { "expr": "stock_macd_signal{symbol=~\"$symbol\"}", "legendFormat":"Signal {{symbol}}", "refId":"B" }
+      ]
+    },
+    { "type": "timeseries", "title": "Bollinger %B 20d (selected)", "datasource":"Prometheus",
+      "gridPos": { "x":12,"y":28,"w":12,"h":8 },
+      "targets": [{ "expr": "stock_bbp_20d{symbol=~\"$symbol\"}", "legendFormat":"{{symbol}}", "refId":"A" }]
+    }
+  ]
+}

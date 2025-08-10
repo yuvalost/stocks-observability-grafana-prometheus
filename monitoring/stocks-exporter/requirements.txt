@@ -1,0 +1,4 @@
+prometheus_client==0.20.0
+yfinance==0.2.43
+pandas>=2.0.0
+numpy>=1.25.0

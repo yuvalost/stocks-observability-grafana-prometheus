@@ -1,0 +1,26 @@
+{
+  "title": "Stocks  Fast View",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+    { "type": "timeseries", "title": "Price (Last 30m)", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 0, "w": 18, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "stock_price", "legendFormat": "{{symbol}}" }]
+    },
+    { "type": "stat", "title": "15m % Change", "datasource": "Prometheus",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 8 },
+      "targets": [{ "refId": "A", "expr": "(stock_price - stock_price offset 15m) / (stock_price offset 15m) * 100" }]
+    },
+    { "type": "stat", "title": "% Change over Range", "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 8, "w": 6, "h": 6 },
+      "targets": [{ "refId": "A", "expr": "(stock_price - (stock_price @ start())) / (stock_price @ start()) * 100" }]
+    },
+    { "type": "table", "title": "Top 10 by 15m %", "datasource": "Prometheus",
+      "gridPos": { "x": 6, "y": 8, "w": 12, "h": 6 },
+      "targets": [{ "refId": "A", "expr": "topk(10, (stock_price - stock_price offset 15m) / (stock_price offset 15m) * 100)" }]
+    }
+  ]
+}
