@@ -1,0 +1,28 @@
+groups:
+- name: stocks-derived-plus
+  rules:
+  # “% change over selected range” (works immediately with Grafana time picker)
+  - record: stock_change_range_percent
+    expr: (stock_price - (stock_price @ start())) / (stock_price @ start()) * 100
+
+  # Drawdown from 7d high / distance to 7d low
+  - record: stock_drawdown_7d_percent
+    expr: (stock_price - max_over_time(stock_price[7d])) / max_over_time(stock_price[7d]) * 100
+  - record: stock_up_from_7d_low_percent
+    expr: (stock_price - min_over_time(stock_price[7d])) / min_over_time(stock_price[7d]) * 100
+
+  # Above/below 4h MA (momentum flag)
+  - record: stock_ma_4h
+    expr: avg_over_time(stock_price[4h])
+  - record: stock_above_ma_4h
+    expr: stock_price > stock_ma_4h
+
+  # Breadth (% of names above MA)
+  - record: market_breadth_above_ma_4h_percent
+    expr: 100 * sum(stock_above_ma_4h) / count(stock_above_ma_4h)
+
+  # Top movers short windows
+  - record: stock_change_15m_percent
+    expr: (stock_price - stock_price offset 15m) / (stock_price offset 15m) * 100
+  - record: stock_change_1h_percent
+    expr: (stock_price - stock_price offset 1h) / (stock_price offset 1h) * 100

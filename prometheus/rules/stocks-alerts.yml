@@ -1,0 +1,26 @@
+groups:
+- name: stocks-alerts
+  rules:
+  - alert: RSI_Oversold
+    expr: stock_rsi14 < 30
+    for: 20m
+    labels: { severity: warning }
+    annotations:
+      summary: "RSI oversold: {{ $labels.symbol }}"
+      description: "RSI(14) below 30 for 20m."
+
+  - alert: VolumeSpike
+    expr: stock_volume_ratio > 2.5
+    for: 10m
+    labels: { severity: info }
+    annotations:
+      summary: "Volume spike: {{ $labels.symbol }}"
+      description: "Current volume > 2.5x 20d average."
+
+  - alert: Breakout7d
+    expr: stock_price >= max_over_time(stock_price[7d])
+    for: 15m
+    labels: { severity: info }
+    annotations:
+      summary: "7d breakout: {{ $labels.symbol }}"
+      description: "Price making a 7-day high."
